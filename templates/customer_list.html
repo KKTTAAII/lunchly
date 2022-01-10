@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Customers{% endblock %}
+{% block content %}
+
+<a class="btn btn-primary" style="float: right" href="/add/">Add a Customer</a></p>
+
+<h1>Customers</h1>
+
+<form action="/search/" method="POST">
+  <div>
+    <label for="name">Search: </label><input class="form-control" type="text" name="name">
+  </div>
+  <div><button class="btn btn-primary mt-2">Search</button></div>
+</form>
+
+<ul style="column-count: 4">
+  {% for customer in customers %}
+  <li><a href="/{{ customer.id }}/">{{ customer.fullName }}</a></li>
+  {% endfor %}
+</ul>
+
+{% endblock %}
