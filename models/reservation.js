@@ -1,11 +1,8 @@
 /** Reservation for Lunchly */
-
 const moment = require("moment");
-
 const db = require("../db");
 
 /** A reservation for a party */
-
 class Reservation {
   constructor({ id, customerId, numGuests, startAt, notes }) {
     this.id = id;
@@ -17,9 +14,9 @@ class Reservation {
 
   /**one id for one res only*/
   set customerId(id) {
-    if(this._customerId && this._customerId !== id){
+    if (this._customerId && this._customerId !== id) {
       throw new Error("Cannot change customer ID");
-    }else{
+    } else {
       this._customerId = id;
     }
   }
@@ -29,9 +26,8 @@ class Reservation {
   }
 
   /**validate date obj */
-
   set startAt(date) {
-    if(date instanceof Date && !isNaN(date)){
+    if (date instanceof Date && !isNaN(date)) {
       this._startAt = date;
     } else {
       const err = new Error(`Not a valid date`);
@@ -41,37 +37,32 @@ class Reservation {
   }
 
   /**get startAt value */
-
   get startAt() {
     return this._startAt;
   }
 
   /**get guest number val */
-
   get numGuests() {
     return this._numGuests;
   }
 
   /** validate guest number*/
-
   set numGuests(num) {
-    if(num < 1){
+    if (num < 1) {
       const err = new Error(`Guest number must be at least 1 person`);
       err.status = 400;
       throw err;
-    }else{
+    } else {
       this._numGuests = num;
     }
   }
 
   /** formatter for startAt */
-
   getformattedStartAt() {
-    return moment(this.startAt).format("MMMM Do YYYY, h:mm a");
+    return moment(this.startAt).format("D MMMM YYYY h:mm a");
   }
 
   /** given a customer id, find their reservations. */
-
   static async getReservationsForCustomer(customerId) {
     const results = await db.query(
       `SELECT id, 
@@ -83,12 +74,10 @@ class Reservation {
          WHERE customer_id = $1`,
       [customerId]
     );
-
-    return results.rows.map((row) => new Reservation(row));
+    return results.rows.map(row => new Reservation(row));
   }
 
   /** save reservation */
-
   async save() {
     if (this.id === undefined) {
       const result = await db.query(
@@ -107,6 +96,26 @@ class Reservation {
     }
   }
 
+  /**get a reservation */
+  static async get(id) {
+    const results = await db.query(
+      `SELECT id, 
+        customer_id AS "customerId", 
+        num_guests AS "numGuests", 
+        start_at AS "startAt", 
+        notes AS "notes"
+        FROM reservations 
+        WHERE id = $1`,
+      [id]
+    );
+    const reservation = results.rows[0];
+    if (reservation === undefined) {
+      const err = new Error(`No such reservation: ${id}`);
+      err.status = 404;
+      throw err;
+    }
+    return new Reservation(reservation);
+  }
 }
 
 module.exports = Reservation;
